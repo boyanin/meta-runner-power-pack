@@ -13,6 +13,7 @@ Param (
     [string] $proj = '%mr.GitVersion.proj%',
     [string] $projArgs = '%mr.GitVersion.projArgs%',
     [string] $updateAssemblyInfo = '%mr.GitVersion.updateAssemblyInfo%',
+    [string] $updateAssemblyInfoFileName = '%mr.GitVersion.updateAssemblyInfoFileName%',
     [string] $updateGitVersion = '%mr.GitVersion.updateGitVersion%'
 )
 
@@ -62,8 +63,11 @@ function Build-Arguments() {
         $args = Append-IfSpecified $args "proj" $proj
         $args = Append-IfSpecified $args "projargs" $projargs
     }
-    if ($updateAssemblyInfo -eq "true") {
-        $args = "$args /UpdateAssemblyInfo"
+    if (Test-IsSpecified $updateAssemblyInfoFileName) {
+        $args = "$args /UpdateAssemblyInfo $updateAssemblyInfoFileName"
+    }
+    elseif ($updateAssemblyInfo -eq "true") {
+        $args = "$args /UpdateAssemblyInfo true"
     }
     if ($output -eq "json" -and (Test-IsSpecified $outputFile)) {
         $args = "$args > ""$outputFile"""

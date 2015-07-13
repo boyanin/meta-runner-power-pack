@@ -16,6 +16,7 @@
       <param name="mr.GitVersion.proj" value="" spec="text description='Optional MSBuild file relative to the working directory to run using GitVersion - environment vars will be available to the process.' display='normal' label='MSBuild File:'" />
       <param name="mr.GitVersion.projArgs" value="" spec="text description='If an MSBuild file is specified then arguments to pass to MSBuild.' display='normal' label='MSBuild Arguments:'" />
       <param name="mr.GitVersion.updateAssemblyInfo" value="false" spec="checkbox checkedValue='true' description='Update any AssemblyInfo files while running the Executable or MSBuild file?' display='normal' label='Update AssemblyInfo Files:' uncheckedValue='false'" />
+      <param name="mr.GitVersion.updateAssemblyInfoFileName" value="" spec="text description='A path to a specific AssemblyInfo file to be updated, typically a shared one. If this field is populated, then other AssemblyInfo.cs files will not be updated' display='normal' label='Update a specific AssemblyInfo file:'" />
       <param name="mr.GitVersion.updateGitVersion" value="false" spec="checkbox checkedValue='true' description='Use Chocolatey to check whether a new version of GitVersion is available?' display='normal' label='Update GitVersion:' uncheckedValue='false'" />
     </parameters>
     <build-runners>
@@ -43,6 +44,7 @@ Param (
     [string] $proj = '%mr.GitVersion.proj%',
     [string] $projArgs = '%mr.GitVersion.projArgs%',
     [string] $updateAssemblyInfo = '%mr.GitVersion.updateAssemblyInfo%',
+    [string] $updateAssemblyInfoFileName = '%mr.GitVersion.updateAssemblyInfoFileName%',
     [string] $updateGitVersion = '%mr.GitVersion.updateGitVersion%'
 )
 
@@ -93,7 +95,10 @@ function Build-Arguments() {
         $args = Append-IfSpecified $args "proj" $proj
         $args = Append-IfSpecified $args "projargs" $projargs
     }
-    if ($updateAssemblyInfo -eq "true") {
+    if (Test-IsSpecified $updateAssemblyInfoFileName) {
+        $args = "$args /UpdateAssemblyInfo $updateAssemblyInfoFileName"
+    }
+    elseif ($updateAssemblyInfo -eq "true") {
         $args = "$args /UpdateAssemblyInfo true"
     }
     if ($output -eq "json" -and (Test-IsSpecified $outputFile)) {
